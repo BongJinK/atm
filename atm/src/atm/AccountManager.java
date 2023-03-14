@@ -33,26 +33,25 @@ public class AccountManager {
 	// Delete
 	public void deleteAccount(Account account) {
 		int index = indexOf(account);
-		if( index != -1)
-			deleteAccount(index);
-		else
-			System.out.println("존재하지 않습니다. 다시 확인해주세요.");
+		deleteAccount(index);
 	}
-	
+
 	private int indexOf(Account account) {
 		int index = -1;
-		
+		if (account != null) {
+			for (int i = 0; i < list.size(); i++) {
+				String saveAccount = list.get(i).getAccount();
+				if (account.getAccount().equals(saveAccount))
+					return i;
+			}
+		}
 		return index;
 	}
-	
+
 	public void deleteAccount(int index) {
 		list.remove(index);
 		System.out.println("삭제되었습니다.");
 	}
-	
-
-	
-
 
 	public ArrayList<Account> getList() {
 		return list;

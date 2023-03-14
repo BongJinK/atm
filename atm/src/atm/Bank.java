@@ -5,8 +5,8 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class Bank {
-	Scanner scanner;
-	Random random;
+	private Scanner scanner;
+	private Random random;
 
 	private final int EXIT = 0;
 	private String name;
@@ -14,7 +14,6 @@ public class Bank {
 	private AccountManager accountmanager;
 	private int log;
 
-	// 0 생성자 초기화
 	public Bank(String name) {
 		this.scanner = new Scanner(System.in);
 		this.random = new Random();
@@ -24,13 +23,13 @@ public class Bank {
 		this.log = -1;
 	}
 
-	public String inputString(String message) {
+	private String inputString(String message) {
 		System.out.printf("%s : ", message);
 		String data = this.scanner.next();
 		return data;
 	}
 
-	public int inputNumber(String message) {
+	private int inputNumber(String message) {
 		int data = -1;
 		while (true) {
 			try {
@@ -41,7 +40,7 @@ public class Bank {
 				System.out.println("유효한 범주의 입력이 아닙니다.");
 				scanner.nextLine();
 			}
-			if (data < 1)
+			if (data < 0)
 				continue;
 			return data;
 		}
@@ -51,14 +50,14 @@ public class Bank {
 		return log != -1;
 	}
 
-	// 1. printMenu()
 	private void printMenu() {
 		System.out.printf("==== %s ====\n", this.name);
 		System.out.println("1. 회원가입\n2. 회원탈퇴\n3. 계좌등록");
 		System.out.println("4. 계좌철회\n5. 로그인\n6. 로그아웃");
+		System.out.println("0. 종료");
 	}
 
-	// 2. 회원가입 [1]
+	// 1. 회원가입 [1]
 	private void joinMembership() {
 		if (!isLogged()) {
 			String id = idDuplicationCheck();
@@ -71,7 +70,7 @@ public class Bank {
 		}
 	}
 
-	// 2-1 아이디 중복검사
+	// 1-1 아이디 중복검사
 	private String idDuplicationCheck() {
 		while (true) {
 			String id = inputString("아이디 : ");
@@ -88,7 +87,7 @@ public class Bank {
 		}
 	}
 
-	// 3. 회원 탈퇴 [2]
+	// 2. 회원 탈퇴 [2]
 	private void leaveMembership() {
 		if (isLogged()) {
 			String password = inputString("비밀번호 : ");
@@ -96,7 +95,7 @@ public class Bank {
 		}
 	}
 
-	// 4. 계좌 등록 [3]
+	// 3. 계좌 등록 [3]
 	private void joinAccount() {
 		if (isLogged()) {
 			String acc = accountDuplicationCheck();
@@ -110,7 +109,7 @@ public class Bank {
 		}
 	}
 
-	// 4-1 계좌 중복 검증
+	// 3-1 계좌 중복 검증
 	private String accountDuplicationCheck() {
 		while (true) {
 			String account = "";
@@ -119,6 +118,7 @@ public class Bank {
 			int endNum = random.nextInt(899) + 100;
 
 			account += frontNum + "-" + middleNum + "-" + endNum + "";
+			System.out.println(account);
 
 			boolean duplication = false;
 			for (Account i : this.accountmanager.getList()) {
@@ -126,49 +126,47 @@ public class Bank {
 					duplication = true;
 			}
 
-			if (!duplication) {
+			if (!duplication)
 				return account;
+		}
+	}
+
+	// 4. 계좌철회 [4]
+	private void deleteAccount() {
+		if(isLogged()) {
+			User user = this.usermanager.getList().get(this.log);
+			for (int i = 0; i < user.getAccs().size(); i++) {
+				Account account = user.getAccs().get(i);
+				System.out.printf("%d. %s\n", i + 1, account.toString());
+			}
+
+			int select = selectListNumber(user) - 1;
+			System.out.printf("삭제할 계좌로 %d번 계좌 선택하셧습니다.\n", select + 1);
+
+			String password = inputString("비밀번호");
+			if (user.getPassWord().equals(password)) {
+				Account delAcc = this.accountmanager.getAccount(select);
+
+				this.accountmanager.deleteAccount(delAcc);
+				user.deleteAccount(select);
+			} else {
+				System.out.println("비밀번호를 다시 확인해주세요");
 			}
 		}
 	}
 
-	// 5. 계좌철회 [4]
-	private void deleteAccount() {
-		User user = this.usermanager.getList().get(this.log);
-		int index = 0;
-		for (Account i : user.getAccs()) {
-			System.out.printf("%d. %s", ++index, i.toString());
-		}
-		
-		int select = selectListNumber(user);
-		System.out.printf("삭제할 계좌로 %d번 계좌 선택하셧습니다.\n",select + 1);
-		
-		String password = inputString("비밀번호");
-		if(user.getPassWord().equals(password)) {
-//			user.getAccs().get(select)
-//			user.getAccs().remove(select);
-			Account delAcc = this.accountmanager.getAccount(select);
-			
-			this.accountmanager.deleteAccount(delAcc);
-//			user.deleteAccount(delAcc);
-		}else {
-			System.out.println("비밀번호를 다시 확인해주세요");
-		}
-		
-		
-	}
-	
 	private int selectListNumber(User user) {
-		int select = -1;
-		while(true) {
+		int max = user.getAccs().size();
+		int select;
+		while (true) {
 			select = inputNumber("삭제할 계좌");
-			if(select > user.getAccs().size())
-				continue;
-			return select-1;
-		}	
+			if (select >= 1 && select <= max)
+				return select;
+			System.out.printf("1부터 %d 사이의 값을 입력해주세요.\n", max);
+		}
 	}
 
-	// 6. 로그인 [5]
+	// 5. 로그인 [5]
 	private void logIn() {
 		if (!isLogged()) {
 			String id = inputString("아이디");
@@ -192,20 +190,21 @@ public class Bank {
 		}
 	}
 
-	// 7. 로그아웃 [6]
+	// 6. 로그아웃 [6]
 	private void logOut() {
-		this.log = -1;
-		System.out.println("로그아웃 되었습니다.");
+		if (isLogged()) {
+			this.log = -1;
+			System.out.println("로그아웃 되었습니다.");
+		}
 	}
 
 	public void run() {
-
 		while (true) {
 			if (isLogged())
 				System.out.println(this.usermanager.getList().get(this.log).getId());
 
 			printMenu();
-			int select = inputNumber("메뉴") -1;
+			int select = inputNumber("메뉴");
 			if (select == EXIT) {
 				System.out.println("프로그램을 종료합니다.");
 				break;
@@ -217,18 +216,12 @@ public class Bank {
 				leaveMembership();
 			else if (select == 3)
 				joinAccount();
-			else if (select == 4) {
-			} else if (select == 5)
+			else if (select == 4)
+				deleteAccount();
+			else if (select == 5)
 				logIn();
-			else if (select == 6) {
-			}
-
+			else if (select == 6)
+				logOut();
 		}
 	}
-
-	// ATM 프로젝트
-
-	// 1. 회원가입 / 2. 탈퇴
-	// 3. 계좌 신청 / 4. 철회 ( 1인 3계좌까지 )
-	// 5. 로그인
 }

@@ -54,6 +54,10 @@ public class User {
 			System.out.println("계좌는 1인당 3개까지 보유가능합니다.");
 	}
 
+	public void deleteAccount(int index) {
+		accs.remove(index);
+	}
+
 	public void setPassWord(String Password) {
 		this.password = Password;
 	}
