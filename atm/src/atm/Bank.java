@@ -1,6 +1,5 @@
 package atm;
 
-import java.io.File;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -67,9 +66,9 @@ public class Bank {
 	// 1. 회원가입
 	private void joinMembership() {
 		if (!isLogged()) {
-			String id = inputString("아이디 : ");
-			String password = inputString("비밀번호 : ");
-			String name = inputString("이름 : ");
+			String id = inputString("아이디");
+			String password = inputString("비밀번호");
+			String name = inputString("이름");
 
 			User user = new User(id, password, name);
 
@@ -85,6 +84,7 @@ public class Bank {
 		if (isLogged()) {
 			String password = inputString("비밀번호 : ");
 			this.usermanager.deleteUserByPassword(this.log, password);
+			this.log = -1;
 		}
 	}
 
@@ -164,11 +164,13 @@ public class Bank {
 
 		int oldBalance = user.getAccount(select).getBalance();
 		int outputMoney = inputNumber("금액");
-		if (oldBalance >= outputMoney)
+		if (oldBalance >= outputMoney) {
 			user.getAccount(select).setBalance(oldBalance - outputMoney);
-		else {
+			System.out.printf("%d원 출금되었습니다.\n",outputMoney);	
+			System.out.printf("잔액 : %d원\n", user.getAccount(select).getBalance());
+		}else {
 			System.err.println("잔액이 부족합니다.");
-			System.out.printf("잔액 : %d원", oldBalance);
+			System.out.printf("잔액 : %d원\n", oldBalance);
 		}
 	}
 
@@ -224,7 +226,11 @@ public class Bank {
 
 			if (user.getAccountSize() < Account.LIMIT) {
 				Account account = this.accountmanager.createAccount(new Account(id));
-				this.usermanager.setUser(user, account);
+				// 업데이트 된 User 사본이 -> list 반영 
+				this.usermanager.setUser(user, account, Account.ADD);
+
+				System.out.println("계좌가 생성되었습니다.");
+				System.out.printf("계좌번호는 %s 입니다.\n", account.getAccNum());
 			} else
 				System.err.println("계좌는 3개까지 보유 가능합니다.");
 		}
@@ -233,16 +239,19 @@ public class Bank {
 	// 5-6. 계좌철회
 	private void deleteAccount() {
 		if (isLogged()) {
+			// User 사본 
 			User user = this.usermanager.getUser(this.log);
 			int select = selectAccount(user);
 
 			String password = inputString("비밀번호");
 			if (user.getPassWord().equals(password)) {
 				Account deleteAcc = user.getAccount(select);
-//				Account delAcc = this.accountmanager.getAccount(select);
 
 				this.accountmanager.deleteAccount(deleteAcc);
-				user.deleteAccount(select);
+				user.deleteAccount(deleteAcc);
+				
+				// 업데이트 된 User 사본이 -> list 반영 
+				this.usermanager.setUser(user, deleteAcc, Account.DELETE);
 			} else {
 				System.err.println("비밀번호를 다시 확인해주세요");
 			}
@@ -266,28 +275,40 @@ public class Bank {
 		int max = user.getAccountList().size();
 		int select;
 		while (true) {
-			select = inputNumber("삭제할 계좌");
+			select = inputNumber("계좌 리스트 번호");
 			if (select >= 1 && select <= max)
 				return select;
 			System.err.printf("1부터 %d 사이의 값을 입력해주세요.\n", max);
 		}
 	}
-	
+
 	// 6. 파일
 	private void fileRun() {
-		while(true) {
+		while (true) {
 			fileMenu();
-			
+
 			int select = inputNumber("메뉴");
-			if( select == EXIT ) {
+			if (select == EXIT) {
 				System.out.println("뒤로 돌아갑니다.");
 				break;
+			}
+			if (select == 1) {
+			} else if (select == 2) {
 			}
 		}
 	}
 
 	public void run() {
 		while (true) {
+			for(int i= 0; i < this.usermanager.size(); i++) {
+				System.out.println(this.usermanager.getUser(i));				
+			}
+			System.out.println("----");
+			for(int i= 0; i < this.accountmanager.size(); i++) {
+				System.out.println(this.accountmanager.getAccount(i));				
+			}
+			System.out.println("----");
+			
 			if (isLogged())
 				System.out.println(this.usermanager.getUser(this.log).getId());
 

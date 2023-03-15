@@ -2,6 +2,8 @@ package atm;
 
 public class Account {
 	
+	public static int ADD = 1;
+	public static int DELETE = 2;
 	public static int LIMIT = 3;
 
 	private String userId, accNum;
@@ -35,7 +37,8 @@ public class Account {
 	}
 
 	public void setBalance(int money) {
-		this.balance += money;
+		this.balance = money;
+//		this.balance += money;
 	}
 
 	@Override

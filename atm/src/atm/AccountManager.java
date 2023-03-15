@@ -58,7 +58,8 @@ public class AccountManager {
 	// Delete
 	public void deleteAccount(Account account) {
 		int index = indexOf(account);
-		deleteAccount(index);
+		if( index != -1)
+			deleteAccount(index);
 	}
 
 	private int indexOf(Account account) {
@@ -78,7 +79,7 @@ public class AccountManager {
 		System.out.println("삭제되었습니다.");
 	}
 	
-
-	
-
+	public int size() {
+		return list.size();
+	}
 }

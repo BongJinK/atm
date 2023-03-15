@@ -20,7 +20,7 @@ public class UserManager {
 	public User getUser(int index) {
 		User user = list.get(index);
 
-		User request = new User(user.getId(), user.getPassWord(), user.getName());
+		User request = new User(user.getId(), user.getPassWord(), user.getName(), user.getAccountList());
 		return request;
 	}
 
@@ -47,10 +47,13 @@ public class UserManager {
 		list.set(index, user);
 	}
 	
-	public void setUser(User user, Account account) {
+	public void setUser(User user, Account account, int order) {
 		int index = indexOfById(user.getId());
-		
-		list.get(index).addAccount(account);
+
+		if (order == Account.ADD)
+			list.get(index).addAccount(account);
+		else if (order == Account.DELETE)
+			list.get(index).deleteAccount(account);
 	}
 
 	// Delete
