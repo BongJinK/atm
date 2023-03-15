@@ -32,7 +32,7 @@ public class UserManager {
 			user = getUser(index);
 		return user;
 	}
-	
+
 	private int indexOfById(String id) {
 		int index = -1;
 		for (User user : list) {
@@ -46,7 +46,7 @@ public class UserManager {
 	public void setUser(int index, User user) {
 		list.set(index, user);
 	}
-	
+
 	public void setUser(User user, Account account, int order) {
 		int index = indexOfById(user.getId());
 
@@ -66,11 +66,11 @@ public class UserManager {
 			System.out.println("삭제되었습니다.");
 		}
 	}
-	
+
 	public void deleteUser(int index) {
 		list.remove(index);
 	}
-	
+
 	public int size() {
 		return list.size();
 	}

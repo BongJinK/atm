@@ -48,17 +48,16 @@ public class User {
 
 	public void deleteAccount(Account account) {
 		int index = indexOf(account);
-		if(index != -1)
+		if (index != -1)
 			deleteAccount(index);
 	}
-	
-	
+
 	private int indexOf(Account account) {
 		int index = -1;
-		if( account != null) {
-			for(int i = 0; i < this.accs.size(); i++) {
+		if (account != null) {
+			for (int i = 0; i < this.accs.size(); i++) {
 				String saveAccount = this.accs.get(i).getAccNum();
-				if( account.getAccNum().equals(saveAccount))
+				if (account.getAccNum().equals(saveAccount))
 					return i;
 			}
 		}
@@ -67,7 +66,7 @@ public class User {
 
 	public void deleteAccount(int index) {
 		this.accs.remove(index);
-		System.out.println("!!");
+		System.out.println("!!.");
 	}
 
 	@Override

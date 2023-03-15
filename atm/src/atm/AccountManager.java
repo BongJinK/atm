@@ -15,20 +15,20 @@ public class AccountManager {
 		list.add(account);
 		return account;
 	}
-	
+
 	private String accNumGenerator() {
 		String account = "";
-		
+
 		Random random = new Random();
-		while(true) {
+		while (true) {
 			int frontNum = random.nextInt(8999) + 1000;
 			int middleNum = random.nextInt(8999) + 1000;
 			int endNum = random.nextInt(899) + 100;
 			account += frontNum + "-" + middleNum + "-" + endNum + "";
-			
+
 			Account check = getAccountByAccNum(account);
-			if( check == null) 
-				return account;				
+			if (check == null)
+				return account;
 		}
 	}
 
@@ -36,15 +36,15 @@ public class AccountManager {
 	public Account getAccount(int index) {
 		Account account = list.get(index);
 
-		Account reqObj = new Account(account.getId(), account.getAccNum(),account.getBalance());
+		Account reqObj = new Account(account.getId(), account.getAccNum(), account.getBalance());
 		return reqObj;
 	}
-	
+
 	public Account getAccountByAccNum(String accountNum) {
 		Account account = null;
-		
-		for(Account object : list) {
-			if(object.getAccNum().equals(accountNum))
+
+		for (Account object : list) {
+			if (object.getAccNum().equals(accountNum))
 				account = object;
 		}
 		return account;
@@ -58,7 +58,7 @@ public class AccountManager {
 	// Delete
 	public void deleteAccount(Account account) {
 		int index = indexOf(account);
-		if( index != -1)
+		if (index != -1)
 			deleteAccount(index);
 	}
 
@@ -78,7 +78,7 @@ public class AccountManager {
 		list.remove(index);
 		System.out.println("삭제되었습니다.");
 	}
-	
+
 	public int size() {
 		return list.size();
 	}

@@ -34,7 +34,7 @@ public class Bank {
 				data = this.scanner.nextInt();
 			} catch (InputMismatchException e) {
 				e.printStackTrace();
-				System.out.println("유효한 범주의 입력이 아닙니다.");
+				System.err.println("유효한 범주의 입력이 아닙니다.");
 				scanner.nextLine();
 			}
 			if (data < 0)
@@ -48,7 +48,12 @@ public class Bank {
 	}
 
 	private void printMainMenu() {
-		System.out.printf("==== %s ====\n", this.name);
+		if (!isLogged())
+			System.out.printf("==== %s ====\n", this.name);
+		else {
+			String name = this.usermanager.getUser(this.log).getName();
+			System.out.printf("==== %s[%s] ====\n", this.name, name);
+		}
 		System.out.println("1. 회원가입\n2. 회원탈퇴\n3. 로그인");
 		System.out.println("4. 로그아웃\n5. 뱅킹\n6. 파일");
 		System.out.println("0. 종료");
@@ -82,7 +87,7 @@ public class Bank {
 	// 2. 회원 탈퇴
 	private void leaveMembership() {
 		if (isLogged()) {
-			String password = inputString("비밀번호 : ");
+			String password = inputString("비밀번호");
 			this.usermanager.deleteUserByPassword(this.log, password);
 			this.log = -1;
 		}
@@ -166,9 +171,9 @@ public class Bank {
 		int outputMoney = inputNumber("금액");
 		if (oldBalance >= outputMoney) {
 			user.getAccount(select).setBalance(oldBalance - outputMoney);
-			System.out.printf("%d원 출금되었습니다.\n",outputMoney);	
+			System.out.printf("%d원 출금되었습니다.\n", outputMoney);
 			System.out.printf("잔액 : %d원\n", user.getAccount(select).getBalance());
-		}else {
+		} else {
 			System.err.println("잔액이 부족합니다.");
 			System.out.printf("잔액 : %d원\n", oldBalance);
 		}
@@ -177,6 +182,7 @@ public class Bank {
 	// 5-3 조회
 	private void query() {
 		User user = this.usermanager.getUser(this.log);
+		System.out.printf("==== %s님 계좌 내역 ====\n", user.getName());
 		for (int i = 0; i < user.getAccountList().size(); i++) {
 			Account account = user.getAccountList().get(i);
 			System.out.printf("%d. %s\n", i + 1, account.toString());
@@ -189,32 +195,44 @@ public class Bank {
 		int select = selectAccount(user);
 
 		String transferAccount = inputString("이체할 계좌번호");
+		
+		String accNum = "";
+		accNum += transferAccount.substring(0, 4) + "-";
+		accNum += transferAccount.substring(4, 8) + "-";
+		accNum += transferAccount.substring(8, 11);
+		Account account = this.accountmanager.getAccountByAccNum(accNum);
 
-		if (transferAccount.length() != 11)
+		if (transferAccount.length() != 11 || account == null) {
 			System.err.println("유효한 계좌번호가 아닙니다.");
-		else {
-			String accNum = "";
-			accNum += transferAccount.substring(0, 4) + "-";
-			accNum += transferAccount.substring(4, 8) + "-";
-			accNum += transferAccount.substring(8, 11);
-
-			Account account = this.accountmanager.getAccountByAccNum(accNum);
-			if (account == null)
-				System.err.println("일치하는 계좌가 존재하지 않습니다.");
-			else {
-				int oldBalance = user.getAccount(select).getBalance();
-				int receivingOldBalance = account.getBalance();
-
-				int transferMoney = inputNumber("금액");
-				if (oldBalance >= transferMoney) {
-					user.getAccount(select).setBalance(oldBalance - transferMoney);
-					account.setBalance(receivingOldBalance + transferMoney);
-				} else {
-					System.err.println("잔액이 부족합니다.");
-					System.out.printf("잔액 : %d원", oldBalance);
-				}
-			}
+			return;
 		}
+
+		String selectAccount = user.getAccount(select).getAccNum();
+		
+		if (selectAccount.equals(account.getAccNum())) {
+			System.err.println("동일 계좌로는 이체가 불가능합니다.");
+			return;
+		}
+
+		int oldBalance = user.getAccount(select).getBalance();
+		int transferMoney = inputNumber("금액");
+		
+		if (oldBalance < transferMoney) {
+			System.err.println("잔액이 부족합니다.");
+			System.out.printf("잔액 : %d원", oldBalance);
+			return;
+		}
+		int newBalance = oldBalance - transferMoney;
+		
+		int receivingOldBalance = account.getBalance();
+		int receiveBalance = receivingOldBalance + transferMoney;
+
+		user.getAccount(select).setBalance(newBalance);
+		account.setBalance(receiveBalance);
+		System.out.println("이체가 완료되었습니다.");
+		
+		int myBalance = user.getAccount(select).getBalance();
+		System.out.printf("이체 후 잔액은 %d원 입니다.\n", myBalance);
 	}
 
 	// 5-5. 계좌 생성
@@ -224,22 +242,26 @@ public class Bank {
 			User user = this.usermanager.getUser(this.log);
 			String id = user.getId();
 
-			if (user.getAccountSize() < Account.LIMIT) {
-				Account account = this.accountmanager.createAccount(new Account(id));
-				// 업데이트 된 User 사본이 -> list 반영 
-				this.usermanager.setUser(user, account, Account.ADD);
-
-				System.out.println("계좌가 생성되었습니다.");
-				System.out.printf("계좌번호는 %s 입니다.\n", account.getAccNum());
-			} else
+			if (user.getAccountSize() >= Account.LIMIT) {
 				System.err.println("계좌는 3개까지 보유 가능합니다.");
+				return;	
+			}
+			
+			Account account = this.accountmanager.createAccount(new Account(id));
+			// 업데이트 된 User 사본이 -> list 반영
+			this.usermanager.setUser(user, account, Account.ADD);
+
+			System.out.println("계좌가 생성되었습니다.");
+			System.out.printf("계좌번호는 %s 입니다.\n", account.getAccNum());
 		}
 	}
+	
+	
 
 	// 5-6. 계좌철회
 	private void deleteAccount() {
 		if (isLogged()) {
-			// User 사본 
+			// User 사본
 			User user = this.usermanager.getUser(this.log);
 			int select = selectAccount(user);
 
@@ -249,8 +271,8 @@ public class Bank {
 
 				this.accountmanager.deleteAccount(deleteAcc);
 				user.deleteAccount(deleteAcc);
-				
-				// 업데이트 된 User 사본이 -> list 반영 
+
+				// 업데이트 된 User 사본이 -> list 반영
 				this.usermanager.setUser(user, deleteAcc, Account.DELETE);
 			} else {
 				System.err.println("비밀번호를 다시 확인해주세요");
@@ -262,7 +284,7 @@ public class Bank {
 	private int selectAccount(User user) {
 		for (int i = 0; i < user.getAccountList().size(); i++) {
 			Account account = user.getAccountList().get(i);
-			System.out.printf("%d. %s\n", i + 1, account.toString());
+			System.out.printf("%d. %s", i + 1, account.toString());
 		}
 
 		int select = selectListNumber(user) - 1;
@@ -300,15 +322,17 @@ public class Bank {
 
 	public void run() {
 		while (true) {
-			for(int i= 0; i < this.usermanager.size(); i++) {
-				System.out.println(this.usermanager.getUser(i));				
+			System.out.println(this.usermanager.size());
+			for (int i = 0; i < this.usermanager.size(); i++) {
+				System.out.printf("%d. %s", i + 1, this.usermanager.getUser(i));
 			}
 			System.out.println("----");
-			for(int i= 0; i < this.accountmanager.size(); i++) {
-				System.out.println(this.accountmanager.getAccount(i));				
+			System.out.println(this.accountmanager.size());
+			for (int i = 0; i < this.accountmanager.size(); i++) {
+				System.out.printf("%d. %s", i + 1, this.accountmanager.getAccount(i));
 			}
 			System.out.println("----");
-			
+
 			if (isLogged())
 				System.out.println(this.usermanager.getUser(this.log).getId());
 
