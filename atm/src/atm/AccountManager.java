@@ -1,28 +1,53 @@
 package atm;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 public class AccountManager {
 
 	private static ArrayList<Account> list = new ArrayList<Account>();
 
 	// Create
-	public void createAccount(Account account) {
+	public Account createAccount(Account account) {
+		// 계좌번호 랜덤 부여
+		String accountNum = accNumGenerator();
+		account.setAccNum(accountNum);
 		list.add(account);
+		return account;
+	}
+	
+	private String accNumGenerator() {
+		String account = "";
+		
+		Random random = new Random();
+		while(true) {
+			int frontNum = random.nextInt(8999) + 1000;
+			int middleNum = random.nextInt(8999) + 1000;
+			int endNum = random.nextInt(899) + 100;
+			account += frontNum + "-" + middleNum + "-" + endNum + "";
+			
+			Account check = getAccountByAccNum(account);
+			if( check == null) 
+				return account;				
+		}
 	}
 
 	// Read
 	public Account getAccount(int index) {
-		Account acc = list.get(index);
+		Account account = list.get(index);
 
-		String id = acc.getId();
-		String account = acc.getAccount();
-		int balance = acc.getBalance();
-
-		Account request = new Account(id, account);
-		request.setBalance(balance);
-
-		return request;
+		Account reqObj = new Account(account.getId(), account.getAccNum(),account.getBalance());
+		return reqObj;
+	}
+	
+	public Account getAccountByAccNum(String accountNum) {
+		Account account = null;
+		
+		for(Account object : list) {
+			if(object.getAccNum().equals(accountNum))
+				account = object;
+		}
+		return account;
 	}
 
 	// Update
@@ -40,8 +65,8 @@ public class AccountManager {
 		int index = -1;
 		if (account != null) {
 			for (int i = 0; i < list.size(); i++) {
-				String saveAccount = list.get(i).getAccount();
-				if (account.getAccount().equals(saveAccount))
+				String saveAccount = list.get(i).getAccNum();
+				if (account.getAccNum().equals(saveAccount))
 					return i;
 			}
 		}
@@ -52,8 +77,8 @@ public class AccountManager {
 		list.remove(index);
 		System.out.println("삭제되었습니다.");
 	}
+	
 
-	public ArrayList<Account> getList() {
-		return list;
-	}
+	
+
 }

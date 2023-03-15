@@ -1,23 +1,33 @@
 package atm;
 
 public class Account {
+	
 	public static int LIMIT = 3;
 
-	private String userId, account;
+	private String userId, accNum;
 	private int balance;
 
-	public Account(String userId, String account) {
+	
+	public Account(String userId) {
 		this.userId = userId;
-		this.account = account;
-		this.balance = 0;
 	}
-
+	
+	public Account(String userId, String accNum, int balance) {
+		this.userId = userId;
+		this.accNum = accNum;
+		this.balance = balance;
+	}
+	
 	public String getId() {
 		return this.userId;
 	}
 
-	public String getAccount() {
-		return this.account;
+	public String getAccNum() {
+		return this.accNum;
+	}
+
+	public void setAccNum(String accNum) {
+		this.accNum = accNum;
 	}
 
 	public int getBalance() {
@@ -30,6 +40,6 @@ public class Account {
 
 	@Override
 	public String toString() {
-		return String.format("%s[%s] : %d\n", this.account, this.userId, this.balance);
+		return String.format("%s[%s] : %d\n", this.accNum, this.userId, this.balance);
 	}
 }
