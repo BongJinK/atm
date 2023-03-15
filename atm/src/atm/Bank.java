@@ -12,9 +12,6 @@ public class Bank {
 	private UserManager usermanager;
 	private AccountManager accountmanager;
 	private int log;
-	private String userFile;
-	private String accountFile;
-	private File file;
 
 	public Bank(String name) {
 		this.scanner = new Scanner(System.in);
@@ -57,12 +54,12 @@ public class Bank {
 		System.out.println("4. 로그아웃\n5. 뱅킹\n6. 파일");
 		System.out.println("0. 종료");
 	}
-	
+
 	private void printBankingMenu() {
 		System.out.println("1. 입금\n2. 출금\n3. 조회\n4. 이체");
 		System.out.println("5. 계좌 생성\n6. 계좌 철회\n0. 뒤로가기");
 	}
-	
+
 	private void fileMenu() {
 		System.out.println("1. 저장\n2. 로드\n0. 뒤로가기");
 	}
@@ -79,7 +76,7 @@ public class Bank {
 			if (this.usermanager.addUser(user) != null)
 				System.out.println("회원가입 성공");
 			else
-				System.out.println("중복된 아이디가 존재합니다.");
+				System.err.println("중복된 아이디가 존재합니다.");
 		}
 	}
 
@@ -90,7 +87,7 @@ public class Bank {
 			this.usermanager.deleteUserByPassword(this.log, password);
 		}
 	}
-	
+
 	// 3. 로그인
 	private void logIn() {
 		if (!isLogged()) {
@@ -107,7 +104,7 @@ public class Bank {
 			}
 
 			if (index == -1)
-				System.out.println("아이디나 비밀번호가 일치하지 않습니다.");
+				System.err.println("아이디나 비밀번호가 일치하지 않습니다.");
 			else {
 				this.log = index;
 				System.out.println("로그인 되었습니다.");
@@ -122,24 +119,103 @@ public class Bank {
 			System.out.println("로그아웃 되었습니다.");
 		}
 	}
-	
-	
 
-	
 	// 5. 뱅킹
 	private void bankingRun() {
-		while(true) {
+		while (true && isLogged()) {
 			printBankingMenu();
-			
+
 			int select = inputNumber("메뉴");
-			if( select == EXIT) {
+			if (select == EXIT) {
 				System.out.println("초기화면으로 돌아갑니다.");
 				break;
+			}
+
+			if (select == 1)
+				deposit(); // 입금
+			else if (select == 2)
+				withdraw(); // 출금
+			else if (select == 3)
+				query(); // 조회
+			else if (select == 4)
+				transfer(); // 이체
+			else if (select == 5)
+				joinAccount();
+			else if (select == 6)
+				deleteAccount();
+		}
+	}
+
+	// 5-1 입금
+	private void deposit() {
+		User user = this.usermanager.getUser(this.log);
+		int select = selectAccount(user);
+
+		int oldBalance = user.getAccount(select).getBalance();
+		int inputMoney = inputNumber("금액");
+
+		user.getAccount(select).setBalance(inputMoney + oldBalance);
+	}
+
+	// 5-2 출금
+	private void withdraw() {
+		User user = this.usermanager.getUser(this.log);
+		int select = selectAccount(user);
+
+		int oldBalance = user.getAccount(select).getBalance();
+		int outputMoney = inputNumber("금액");
+		if (oldBalance >= outputMoney)
+			user.getAccount(select).setBalance(oldBalance - outputMoney);
+		else {
+			System.err.println("잔액이 부족합니다.");
+			System.out.printf("잔액 : %d원", oldBalance);
+		}
+	}
+
+	// 5-3 조회
+	private void query() {
+		User user = this.usermanager.getUser(this.log);
+		for (int i = 0; i < user.getAccountList().size(); i++) {
+			Account account = user.getAccountList().get(i);
+			System.out.printf("%d. %s\n", i + 1, account.toString());
+		}
+	}
+
+	// 5-4 이체
+	private void transfer() {
+		User user = this.usermanager.getUser(this.log);
+		int select = selectAccount(user);
+
+		String transferAccount = inputString("이체할 계좌번호");
+
+		if (transferAccount.length() != 11)
+			System.err.println("유효한 계좌번호가 아닙니다.");
+		else {
+			String accNum = "";
+			accNum += transferAccount.substring(0, 4) + "-";
+			accNum += transferAccount.substring(4, 8) + "-";
+			accNum += transferAccount.substring(8, 11);
+
+			Account account = this.accountmanager.getAccountByAccNum(accNum);
+			if (account == null)
+				System.err.println("일치하는 계좌가 존재하지 않습니다.");
+			else {
+				int oldBalance = user.getAccount(select).getBalance();
+				int receivingOldBalance = account.getBalance();
+
+				int transferMoney = inputNumber("금액");
+				if (oldBalance >= transferMoney) {
+					user.getAccount(select).setBalance(oldBalance - transferMoney);
+					account.setBalance(receivingOldBalance + transferMoney);
+				} else {
+					System.err.println("잔액이 부족합니다.");
+					System.out.printf("잔액 : %d원", oldBalance);
+				}
 			}
 		}
 	}
 
-	// 3. 계좌 등록 [3]
+	// 5-5. 계좌 생성
 	private void joinAccount() {
 		if (isLogged()) {
 			// 복제본 반환 받음 (로그인 되어 있는 회원)
@@ -150,21 +226,15 @@ public class Bank {
 				Account account = this.accountmanager.createAccount(new Account(id));
 				this.usermanager.setUser(user, account);
 			} else
-				System.out.println("계좌는 3개까지 보유 가능합니다.");
+				System.err.println("계좌는 3개까지 보유 가능합니다.");
 		}
 	}
 
-	// 4. 계좌철회 [4]
+	// 5-6. 계좌철회
 	private void deleteAccount() {
 		if (isLogged()) {
 			User user = this.usermanager.getUser(this.log);
-			for (int i = 0; i < user.getAccs().size(); i++) {
-				Account account = user.getAccs().get(i);
-				System.out.printf("%d. %s\n", i + 1, account.toString());
-			}
-
-			int select = selectListNumber(user) - 1;
-			System.out.printf("삭제할 계좌로 %d번 계좌 선택하셧습니다.\n", select + 1);
+			int select = selectAccount(user);
 
 			String password = inputString("비밀번호");
 			if (user.getPassWord().equals(password)) {
@@ -174,19 +244,45 @@ public class Bank {
 				this.accountmanager.deleteAccount(deleteAcc);
 				user.deleteAccount(select);
 			} else {
-				System.out.println("비밀번호를 다시 확인해주세요");
+				System.err.println("비밀번호를 다시 확인해주세요");
 			}
 		}
 	}
 
+	// 5-0. 계좌 선택
+	private int selectAccount(User user) {
+		for (int i = 0; i < user.getAccountList().size(); i++) {
+			Account account = user.getAccountList().get(i);
+			System.out.printf("%d. %s\n", i + 1, account.toString());
+		}
+
+		int select = selectListNumber(user) - 1;
+		System.out.printf("%d번 계좌 선택하셧습니다.\n", select + 1);
+
+		return select;
+	}
+
 	private int selectListNumber(User user) {
-		int max = user.getAccs().size();
+		int max = user.getAccountList().size();
 		int select;
 		while (true) {
 			select = inputNumber("삭제할 계좌");
 			if (select >= 1 && select <= max)
 				return select;
-			System.out.printf("1부터 %d 사이의 값을 입력해주세요.\n", max);
+			System.err.printf("1부터 %d 사이의 값을 입력해주세요.\n", max);
+		}
+	}
+	
+	// 6. 파일
+	private void fileRun() {
+		while(true) {
+			fileMenu();
+			
+			int select = inputNumber("메뉴");
+			if( select == EXIT ) {
+				System.out.println("뒤로 돌아갑니다.");
+				break;
+			}
 		}
 	}
 
@@ -211,10 +307,9 @@ public class Bank {
 			else if (select == 4)
 				logOut();
 			else if (select == 5)
-				joinAccount();
+				bankingRun();
 			else if (select == 6)
-				deleteAccount();
-
+				fileRun();
 		}
 	}
 }

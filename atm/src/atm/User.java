@@ -15,6 +15,13 @@ public class User {
 		this.accs = new ArrayList<Account>();
 	}
 
+	public User(String id, String password, String name, ArrayList<Account> accs) {
+		this.id = id;
+		this.password = password;
+		this.name = name;
+		this.accs = accs;
+	}
+
 	public String getId() {
 		return this.id;
 	}
@@ -48,7 +55,7 @@ public class User {
 		return String.format("%s[%s, %s]\n", this.name, this.id, this.password);
 	}
 
-	public ArrayList<Account> getAccs() {
-		return this.accs;
+	public ArrayList<Account> getAccountList() {
+		return (ArrayList<Account>) this.accs.clone();
 	}
 }
