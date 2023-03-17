@@ -55,6 +55,13 @@ public class UserManager {
 		else if (order == Account.DELETE)
 			list.get(index).deleteAccount(account);
 	}
+	
+	public void setUser(ArrayList<User> userList) {
+		list.clear();
+		for(User i : userList) {
+			list.add(i);
+		}
+	}
 
 	// Delete
 	public void deleteUserByPassword(int log, String password) {
@@ -73,6 +80,10 @@ public class UserManager {
 
 	public int size() {
 		return list.size();
+	}
+	
+	public ArrayList<User> getUserList(){
+		return (ArrayList<User>)list.clone();
 	}
 
 }

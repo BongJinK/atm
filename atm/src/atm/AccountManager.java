@@ -54,6 +54,13 @@ public class AccountManager {
 	public void setAccount(int index, Account account) {
 		list.set(index, account);
 	}
+	
+	public void setAccount(ArrayList<Account> accountList) {
+		list.clear();
+		for(Account i : accountList) {
+			list.add(i);
+		}
+	}
 
 	// Delete
 	public void deleteAccount(Account account) {
@@ -81,5 +88,9 @@ public class AccountManager {
 
 	public int size() {
 		return list.size();
+	}
+	
+	public ArrayList<Account> getAccountList(){
+		return (ArrayList<Account>) list.clone();
 	}
 }

@@ -1,5 +1,6 @@
 package atm;
 
+import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -306,6 +307,7 @@ public class Bank {
 
 	// 6. 파일
 	private void fileRun() {
+		FileManager fileManager = new FileManager();
 		while (true) {
 			fileMenu();
 
@@ -314,10 +316,27 @@ public class Bank {
 				System.out.println("뒤로 돌아갑니다.");
 				break;
 			}
-			if (select == 1) {
-			} else if (select == 2) {
-			}
+			if (select == 1) save(fileManager);
+			else if (select == 2) load(fileManager);
 		}
+	}
+	
+	private void save(FileManager fileManager) {
+		ArrayList<Account> account = this.accountmanager.getAccountList();
+		ArrayList<User> user = this.usermanager.getUserList();
+		fileManager.saveAccountData(account);
+		fileManager.saveUserData(user);
+	}
+	
+	private void load(FileManager fileManager) {
+		if( fileManager.loadAccountData() == null) {
+			System.err.println("로드할 데이터가 존재하지 않습니다.");
+			return;
+		}
+		
+		this.accountmanager.setAccount(fileManager.loadAccountData());
+		ArrayList<Account> loadList = this.accountmanager.getAccountList();
+		this.usermanager.setUser(fileManager.loadUserData(loadList));
 	}
 
 	public void run() {
