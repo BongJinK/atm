@@ -1,5 +1,5 @@
 package atm;
- 
+
 import java.util.ArrayList;
 
 public class UserManager {
@@ -55,10 +55,10 @@ public class UserManager {
 		else if (order == Account.DELETE)
 			list.get(index).deleteAccount(account);
 	}
-	
+
 	public void setUser(ArrayList<User> userList) {
 		list.clear();
-		for(User i : userList) {
+		for (User i : userList) {
 			list.add(i);
 		}
 	}
@@ -81,9 +81,9 @@ public class UserManager {
 	public int size() {
 		return list.size();
 	}
-	
-	public ArrayList<User> getUserList(){
-		return (ArrayList<User>)list.clone();
+
+	public ArrayList<User> getUserList() {
+		return (ArrayList<User>) list.clone();
 	}
 
 }

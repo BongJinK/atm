@@ -1,5 +1,5 @@
 package atm;
- 
+
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -16,7 +16,6 @@ public class AccountManager {
 		return account;
 	}
 
-	
 	private String accNumGenerator() {
 		String account = "";
 
@@ -55,10 +54,10 @@ public class AccountManager {
 	public void setAccount(int index, Account account) {
 		list.set(index, account);
 	}
-	
+
 	public void setAccount(ArrayList<Account> accountList) {
 		list.clear();
-		for(Account i : accountList) {
+		for (Account i : accountList) {
 			list.add(i);
 		}
 	}
@@ -68,6 +67,11 @@ public class AccountManager {
 		int index = indexOf(account);
 		if (index != -1)
 			deleteAccount(index);
+	}
+
+	public void deleteAccount(int index) {
+		list.remove(index);
+		System.out.println("계좌 삭제되었습니다.");
 	}
 
 	private int indexOf(Account account) {
@@ -82,16 +86,11 @@ public class AccountManager {
 		return index;
 	}
 
-	public void deleteAccount(int index) {
-		list.remove(index);
-		System.out.println("삭제되었습니다.");
-	}
-
 	public int size() {
 		return list.size();
 	}
-	
-	public ArrayList<Account> getAccountList(){
+
+	public ArrayList<Account> getAccountList() {
 		return (ArrayList<Account>) list.clone();
 	}
 }

@@ -1,5 +1,5 @@
 package atm;
- 
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -29,7 +29,6 @@ public class FileManager {
 	public void saveUserData(ArrayList<User> list) {
 		if (list != null) {
 			String data = "";
-			System.out.println("유저데이터 리스트 길이 : " + list.size());
 			for (int i = 0; i < list.size(); i++) {
 				User user = list.get(i);
 				data += user.getId() + "/";
@@ -52,15 +51,14 @@ public class FileManager {
 	}
 
 	public ArrayList<User> loadUserData(ArrayList<Account> list) {
-		ArrayList<User> userData = new ArrayList<User>();
+		ArrayList<User> userData = null;
 
-		if (userfile.exists()) {
-//			userData = new ArrayList<User>();
+		if (this.userfile.exists()) {
+			userData = new ArrayList<User>();
 			try {
 				this.fileReader = new FileReader(this.userfile);
 				this.bufferedReader = new BufferedReader(this.fileReader);
 
-				int index = 0;
 				while (this.bufferedReader.ready()) {
 					String[] line = this.bufferedReader.readLine().split("/");
 
@@ -68,22 +66,17 @@ public class FileManager {
 					for (Account i : list) {
 						if (line[0].equals(i.getId())) {
 							user.addAccount(i);
-							System.out.println(i.toString());
 						}
 					}
 					userData.add(user);
-
-					System.out.println(userData.get(index).getId());
-					System.out.println(userData.get(index).getPassWord());
-					System.out.println(userData.get(index++).getName());
 				}
 
 				this.fileReader.close();
 				this.bufferedReader.close();
-				System.out.println("계좌 데이터 로드 성공");
+				System.out.println("유저 데이터 로드 성공");
 			} catch (IOException e) {
 				e.printStackTrace();
-				System.err.println("계좌 데이터 로드 실패");
+				System.err.println("유저 데이터 로드 실패");
 			}
 			return userData;
 		}
@@ -104,7 +97,7 @@ public class FileManager {
 			}
 
 			try {
-				this.fileWriter = new FileWriter(accountfile);
+				this.fileWriter = new FileWriter(this.accountfile);
 				this.fileWriter.write(data);
 				this.fileWriter.close();
 				System.out.println("계좌 데이터 저장 성공");
@@ -118,7 +111,6 @@ public class FileManager {
 
 	public ArrayList<Account> loadAccountData() {
 		ArrayList<Account> accountData = null;
-		int index = 0;
 
 		if (this.accountfile.exists()) {
 			accountData = new ArrayList<Account>();
@@ -132,9 +124,6 @@ public class FileManager {
 					Account account = new Account(line[0], line[1], Integer.parseInt(line[2]));
 
 					accountData.add(account);
-					System.out.println(accountData.get(index).getId());
-					System.out.println(accountData.get(index).getAccNum());
-					System.out.println(accountData.get(index++).getBalance());
 				}
 
 				this.fileReader.close();

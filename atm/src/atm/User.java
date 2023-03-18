@@ -1,5 +1,5 @@
 package atm;
- 
+
 import java.util.ArrayList;
 
 public class User {
@@ -66,7 +66,6 @@ public class User {
 
 	public void deleteAccount(int index) {
 		this.accs.remove(index);
-		System.out.println("!!.");
 	}
 
 	@Override
